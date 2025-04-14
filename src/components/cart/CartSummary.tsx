@@ -2,12 +2,14 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { Link } from "react-router-dom";
+import { getDisplayAmount } from "../../utils/currencyConverter";
 
 interface CartSummaryProps {
   subtotal: number;
   deliveryFee: number;
   tax: number;
   total: number;
+  currency?: string;
   onCheckout: () => void;
 }
 
@@ -16,6 +18,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
   deliveryFee,
   tax,
   total,
+  currency = "USD",
   onCheckout,
 }) => {
   return (
@@ -25,24 +28,24 @@ const CartSummary: React.FC<CartSummaryProps> = ({
       <div className="space-y-3">
         <div className="flex justify-between">
           <span className="text-gray-600">Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>{getDisplayAmount(subtotal, currency)}</span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-gray-600">Delivery Fee</span>
-          <span>${deliveryFee.toFixed(2)}</span>
+          <span>{getDisplayAmount(deliveryFee, currency)}</span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-gray-600">Tax</span>
-          <span>${tax.toFixed(2)}</span>
+          <span>{getDisplayAmount(tax, currency)}</span>
         </div>
 
         <Separator className="my-2" />
 
         <div className="flex justify-between font-semibold">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{getDisplayAmount(total, currency)}</span>
         </div>
       </div>
 

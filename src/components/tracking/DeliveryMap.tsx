@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Navigation, Clock, Car } from "lucide-react";
+import { MapPin, Navigation, Clock, Car, Phone } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Tooltip,
@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { DriverInfo } from "../../types/types";
 
 interface DeliveryMapProps {
   restaurantLocation?: {
@@ -24,6 +25,8 @@ interface DeliveryMapProps {
     address: string;
   };
   eta?: number; // in minutes
+  driverInfo?: DriverInfo;
+  onCallDriver?: () => void;
 }
 
 const DeliveryMap: React.FC<DeliveryMapProps> = ({
@@ -42,6 +45,16 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
     address: "456 Mission St, San Francisco, CA",
   },
   eta = 15,
+  driverInfo = {
+    id: "driver-1",
+    name: "Michael Kimani",
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
+    phone: "+254 712 345 678",
+    rating: 4.8,
+    vehicle: "Toyota Corolla",
+    licensePlate: "KBZ 123A",
+  },
+  onCallDriver = () => console.log("Calling driver..."),
 }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [driverPosition, setDriverPosition] = useState(driverLocation);
@@ -205,12 +218,43 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
         )}
       </div>
 
-      {/* Map Controls */}
-      <div className="p-3 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
-        <Button variant="outline" size="sm" className="text-xs">
-          <MapPin className="h-3 w-3 mr-1" /> Center Map
-        </Button>
-        <div className="text-xs text-gray-500">Updated just now</div>
+      {/* Map Controls and Driver Info */}
+      <div className="p-3 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-between items-center mb-3">
+          <Button variant="outline" size="sm" className="text-xs">
+            <MapPin className="h-3 w-3 mr-1" /> Center Map
+          </Button>
+          <div className="text-xs text-gray-500">Updated just now</div>
+        </div>
+
+        {/* Driver Info Mini Card */}
+        {driverInfo && (
+          <div className="flex items-center justify-between bg-white p-2 rounded-md border border-gray-200 mt-2">
+            <div className="flex items-center">
+              <div className="h-10 w-10 rounded-full overflow-hidden mr-3 border border-primary">
+                <img
+                  src={driverInfo.photo}
+                  alt={driverInfo.name}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div>
+                <p className="font-medium text-sm">{driverInfo.name}</p>
+                <p className="text-xs text-gray-500">
+                  {driverInfo.vehicle} • {driverInfo.licensePlate}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCallDriver}
+              className="text-xs"
+            >
+              <Phone className="h-3 w-3 mr-1" /> Call
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

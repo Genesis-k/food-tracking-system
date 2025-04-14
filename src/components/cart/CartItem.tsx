@@ -1,6 +1,7 @@
 import React from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
+import { getDisplayAmount } from "../../utils/currencyConverter";
 
 export interface CartItemProps {
   id: string;
@@ -9,6 +10,7 @@ export interface CartItemProps {
   quantity: number;
   image: string;
   options?: string[];
+  currency?: string;
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
   onRemove: (id: string) => void;
@@ -21,6 +23,7 @@ const CartItem: React.FC<CartItemProps> = ({
   quantity,
   image,
   options = [],
+  currency = "USD",
   onIncrement,
   onDecrement,
   onRemove,
@@ -46,7 +49,7 @@ const CartItem: React.FC<CartItemProps> = ({
             )}
           </div>
           <p className="text-sm font-medium text-gray-900">
-            ${(price * quantity).toFixed(2)}
+            {getDisplayAmount(price * quantity, currency)}
           </p>
         </div>
 

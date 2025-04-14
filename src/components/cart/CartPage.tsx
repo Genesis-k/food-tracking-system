@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import CartItem, { CartItemProps } from "./CartItem";
 import CartSummary from "./CartSummary";
 import { Button } from "../ui/button";
-import { ShoppingCart, ArrowLeft } from "lucide-react";
+import { ShoppingCart, ArrowLeft, RefreshCw } from "lucide-react";
+import { formatCurrency } from "../../utils/currencyConverter";
 
 // Sample cart items
 const initialCartItems: Omit<
@@ -44,6 +45,7 @@ const CartPage = () => {
   const [deliveryFee, setDeliveryFee] = useState(2.99);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
+  const [currency, setCurrency] = useState<"USD" | "KSH">("USD");
 
   // Calculate totals whenever cart items change
   useEffect(() => {
@@ -96,13 +98,26 @@ const CartPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center mb-6">
-        <Link to="/" className="mr-4">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <h1 className="text-2xl font-bold">Your Cart</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Link to="/" className="mr-4">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Your Cart</h1>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={() =>
+            setCurrency((prev) => (prev === "USD" ? "KSH" : "USD"))
+          }
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>{currency === "USD" ? "Switch to KSh" : "Switch to $"}</span>
+        </Button>
       </div>
 
       {cartItems.length > 0 ? (
@@ -116,6 +131,7 @@ const CartPage = () => {
                   <CartItem
                     key={item.id}
                     {...item}
+                    currency={currency}
                     onIncrement={handleIncrement}
                     onDecrement={handleDecrement}
                     onRemove={handleRemove}
@@ -132,6 +148,7 @@ const CartPage = () => {
               deliveryFee={deliveryFee}
               tax={tax}
               total={total}
+              currency={currency}
               onCheckout={handleCheckout}
             />
           </div>

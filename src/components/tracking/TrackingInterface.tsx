@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import DeliveryMap from "./DeliveryMap";
 import OrderStatusTimeline from "./OrderStatusTimeline";
+import DriverInfoCard from "./DriverInfoCard";
 
 interface OrderStatus {
   id: string;
@@ -15,6 +16,14 @@ interface OrderStatus {
 
 const TrackingInterface = () => {
   const [eta, setEta] = useState<number>(25);
+  const [driverInfo, setDriverInfo] = useState({
+    name: "Michael Kimani",
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
+    phone: "+254 712 345 678",
+    rating: 4.8,
+    vehicle: "Toyota Corolla",
+    licensePlate: "KBZ 123A",
+  });
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([
     {
       id: "placed",
@@ -103,6 +112,16 @@ const TrackingInterface = () => {
     return (completedSteps / orderStatuses.length) * 100;
   };
 
+  const handleCallDriver = () => {
+    // In a real app, this would initiate a call to the driver
+    alert(`Calling driver at ${driverInfo.phone}`);
+  };
+
+  const handleMessageDriver = () => {
+    // In a real app, this would open a messaging interface
+    alert(`Messaging driver at ${driverInfo.phone}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
       {/* Header */}
@@ -136,8 +155,16 @@ const TrackingInterface = () => {
             <DeliveryMap eta={eta} />
           </div>
 
-          {/* Right column - Order Details */}
-          <div className="lg:col-span-1">
+          {/* Right column - Driver Info and Order Details */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Driver Info Card */}
+            <DriverInfoCard
+              {...driverInfo}
+              onCallDriver={handleCallDriver}
+              onMessageDriver={handleMessageDriver}
+            />
+
+            {/* Order Details */}
             <div className="bg-white rounded-lg shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Order Details</h2>
               <div className="space-y-4">
