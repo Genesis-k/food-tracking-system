@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -13,8 +12,6 @@ import { Input } from "../ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -27,82 +24,88 @@ interface Restaurant {
   name: string;
   cuisine: string;
   address: string;
-  status: "active" | "inactive";
+  rating: number;
 }
 
 const RestaurantManagement = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([
     {
       id: "1",
-      name: "Pasta Paradise",
+      name: "Tasty Bites",
       cuisine: "Italian",
       address: "123 Main St",
-      status: "active",
+      rating: 4.5,
     },
     {
       id: "2",
-      name: "Sushi Supreme",
-      cuisine: "Japanese",
+      name: "Spice Garden",
+      cuisine: "Indian",
       address: "456 Oak Ave",
-      status: "active",
+      rating: 4.2,
     },
     {
       id: "3",
-      name: "Burger Barn",
-      cuisine: "American",
-      address: "789 Pine Rd",
-      status: "inactive",
+      name: "Sushi Palace",
+      cuisine: "Japanese",
+      address: "789 Pine Blvd",
+      rating: 4.7,
     },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentRestaurant, setCurrentRestaurant] = useState<Restaurant | null>(
     null,
   );
+  const [formData, setFormData] = useState({
+    name: "",
+    cuisine: "",
+    address: "",
+    rating: 0,
+  });
 
-  const filteredRestaurants = restaurants.filter(
-    (restaurant) =>
-      restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const handleAddRestaurant = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newRestaurant: Restaurant = {
-      id: Date.now().toString(),
-      name: formData.get("name") as string,
-      cuisine: formData.get("cuisine") as string,
-      address: formData.get("address") as string,
-      status: "active",
-    };
-
-    setRestaurants([...restaurants, newRestaurant]);
-    setIsAddDialogOpen(false);
-    e.currentTarget.reset();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: name === "rating" ? parseFloat(value) : value,
+    });
   };
 
-  const handleEditRestaurant = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingRestaurant) return;
+  const handleAddRestaurant = () => {
+    const newRestaurant = {
+      id: Date.now().toString(),
+      ...formData,
+    };
+    setRestaurants([...restaurants, newRestaurant]);
+    setFormData({ name: "", cuisine: "", address: "", rating: 0 });
+    setIsAddDialogOpen(false);
+  };
 
-    const formData = new FormData(e.currentTarget);
+  const handleEditClick = (restaurant: Restaurant) => {
+    setCurrentRestaurant(restaurant);
+    setFormData({
+      name: restaurant.name,
+      cuisine: restaurant.cuisine,
+      address: restaurant.address,
+      rating: restaurant.rating,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateRestaurant = () => {
+    if (!currentRestaurant) return;
+
     const updatedRestaurants = restaurants.map((restaurant) =>
-      restaurant.id === editingRestaurant.id
-        ? {
-            ...restaurant,
-            name: formData.get("name") as string,
-            cuisine: formData.get("cuisine") as string,
-            address: formData.get("address") as string,
-            status:
-              (formData.get("status") as "active" | "inactive") || "active",
-          }
+      restaurant.id === currentRestaurant.id
+        ? { ...restaurant, ...formData }
         : restaurant,
     );
 
     setRestaurants(updatedRestaurants);
-    setEditingRestaurant(null);
+    setIsEditDialogOpen(false);
+    setCurrentRestaurant(null);
+    setFormData({ name: "", cuisine: "", address: "", rating: 0 });
   };
 
   const handleDeleteRestaurant = (id: string) => {
@@ -112,17 +115,10 @@ const RestaurantManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="flex-1 max-w-sm">
-          <Input
-            placeholder="Search restaurants..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
-        </div>
+        <h2 className="text-xl font-semibold">Restaurant Management</h2>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-1">
+            <Button className="flex items-center gap-2">
               <PlusCircle className="h-4 w-4" />
               <span>Add Restaurant</span>
             </Button>
@@ -130,132 +126,78 @@ const RestaurantManagement = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Restaurant</DialogTitle>
-              <DialogDescription>
-                Enter the details for the new restaurant.
-              </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleAddRestaurant} className="space-y-4">
+            <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Restaurant Name</Label>
-                <Input id="name" name="name" required />
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="cuisine">Cuisine Type</Label>
-                <Input id="cuisine" name="cuisine" required />
+                <Input
+                  id="cuisine"
+                  name="cuisine"
+                  value={formData.cuisine}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" name="address" required />
+                <Input
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                />
               </div>
-              <DialogFooter>
-                <Button type="submit">Add Restaurant</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog
-          open={!!editingRestaurant}
-          onOpenChange={(open) => !open && setEditingRestaurant(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Restaurant</DialogTitle>
-              <DialogDescription>
-                Update the restaurant details.
-              </DialogDescription>
-            </DialogHeader>
-            {editingRestaurant && (
-              <form onSubmit={handleEditRestaurant} className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Restaurant Name</Label>
-                  <Input
-                    id="edit-name"
-                    name="name"
-                    defaultValue={editingRestaurant.name}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-cuisine">Cuisine Type</Label>
-                  <Input
-                    id="edit-cuisine"
-                    name="cuisine"
-                    defaultValue={editingRestaurant.cuisine}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-address">Address</Label>
-                  <Input
-                    id="edit-address"
-                    name="address"
-                    defaultValue={editingRestaurant.address}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-status">Status</Label>
-                  <select
-                    id="edit-status"
-                    name="status"
-                    defaultValue={editingRestaurant.status}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Save Changes</Button>
-                </DialogFooter>
-              </form>
-            )}
+              <div className="grid gap-2">
+                <Label htmlFor="rating">Rating (0-5)</Label>
+                <Input
+                  id="rating"
+                  name="rating"
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  value={formData.rating}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+            <Button onClick={handleAddRestaurant}>Save Restaurant</Button>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Table>
-        <TableCaption>List of all restaurants in the system</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Cuisine</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredRestaurants.length === 0 ? (
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                No restaurants found
-              </TableCell>
+              <TableHead>Name</TableHead>
+              <TableHead>Cuisine</TableHead>
+              <TableHead>Address</TableHead>
+              <TableHead>Rating</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ) : (
-            filteredRestaurants.map((restaurant) => (
+          </TableHeader>
+          <TableBody>
+            {restaurants.map((restaurant) => (
               <TableRow key={restaurant.id}>
                 <TableCell className="font-medium">{restaurant.name}</TableCell>
                 <TableCell>{restaurant.cuisine}</TableCell>
                 <TableCell>{restaurant.address}</TableCell>
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      restaurant.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {restaurant.status}
-                  </span>
-                </TableCell>
+                <TableCell>{restaurant.rating}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setEditingRestaurant(restaurant)}
+                      onClick={() => handleEditClick(restaurant)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -269,10 +211,61 @@ const RestaurantManagement = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Restaurant</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Restaurant Name</Label>
+              <Input
+                id="edit-name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-cuisine">Cuisine Type</Label>
+              <Input
+                id="edit-cuisine"
+                name="cuisine"
+                value={formData.cuisine}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-address">Address</Label>
+              <Input
+                id="edit-address"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-rating">Rating (0-5)</Label>
+              <Input
+                id="edit-rating"
+                name="rating"
+                type="number"
+                min="0"
+                max="5"
+                step="0.1"
+                value={formData.rating}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+          <Button onClick={handleUpdateRestaurant}>Update Restaurant</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
